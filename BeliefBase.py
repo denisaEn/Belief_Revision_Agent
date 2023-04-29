@@ -23,9 +23,6 @@ class BeliefBase:
         Add a belief to the base (sorted by order) without checking the validity.
         """
         formula = to_cnf(formula)
-        # Check if the order is within range
-        _validate_order(order)
-
         #Remove dupplicates
         self.delete(formula)
 
@@ -33,39 +30,62 @@ class BeliefBase:
             new_belief = Belief(formula, order)
             # add at the end if there is no belief in the list or the order is maximum
             if len(self.beliefs) == 0 or self.beliefs[-1] >= new_belief:
-                self.beliefs.add(new_belief)
+                self.beliefs.append(new_belief)
             else:
                 for i, belief in enumerate(self.beliefs):
                     if new_belief >= belief:
                         self.beliefs.insert(i, new_belief)
                         break
 
+
     def delete(self, formula):
         """
         Remove any belief with given formula (in case there are any dupplicates)
         """
         for i, belief in enumerate(self.beliefs):
-            if belief.proposition == formula:
+            if belief.formula == formula:
                 self.beliefs.pop(i)
+
 
     def contract(self, formula, order):
         """
         Remove the belief from the Base
         """
-        return 1
-    
+         # Set of maximal subset of KB that not imply other
+        prop_cnf = to_cnf(formula)
+        _validate_order(order)
+
+        _to_delete = []
+        #clauses_pre = self.get_clauses()
+        for i, belief in enumerate(self.beliefs):
+            if entailment(self.beliefs[0:i+1], prop_cnf) and order > belief.order:
+                _to_delete.append(belief)
+
+        self.beliefs = [belief for belief in self.beliefs if belief not in _to_delete]
+        #clauses = self.get_clauses()
+        #if not clauses.issubset(clauses_pre):
+            # Contracted set B' is a subset of B (Success)
+         #   raise Exception('An error arise in contraction and Belief base changed')
+
     def expand(self, formula, order):
         """
         Add the belief to the Base by expanding it
         """
-        return 1
+         # Check if the order is within range
+        _validate_order(order)
+        self.add(formula, order)
     
     def revise(self, formula, order):
         """
         The belief is added and other things are removed,
         so that the resulting new belief set is consistent
         """
-        return 1
+        _validate_order(order)
+
+        cnf = to_cnf(formula)
+        negated_cnf = to_cnf(f'~({cnf})')
+        self.contract(negated_cnf, order)
+        self.expand(formula, order)
     
     # TO DO - other methods here such as:
     # clear (empty the belief set), 

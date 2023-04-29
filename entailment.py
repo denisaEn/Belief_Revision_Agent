@@ -1,4 +1,4 @@
-from sympy.logic.boolalg import to_cnf
+from sympy.logic.boolalg import to_cnf, And, Or
 
 def entailment (base, formula):
 
