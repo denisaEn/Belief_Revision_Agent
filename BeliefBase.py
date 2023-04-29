@@ -1,5 +1,8 @@
 
 
+from sympy.logic.boolalg import to_cnf
+from entailment import *
+
 
 def _validate_order(order):
     """
@@ -19,16 +22,31 @@ class BeliefBase:
         """
         Add a belief to the base (sorted by order) without checking the validity.
         """
-        # Or we can add the belief to the belief base to the correspondent index (sorted by order)
-        # To do
-        return 1
+        formula = to_cnf(formula)
+        # Check if the order is within range
+        _validate_order(order)
 
-    def delete(self, formula, order):
+        #Remove dupplicates
+        self.delete(formula)
+
+        if order > 0:
+            new_belief = Belief(formula, order)
+            # add at the end if there is no belief in the list or the order is maximum
+            if len(self.beliefs) == 0 or self.beliefs[-1] >= new_belief:
+                self.beliefs.add(new_belief)
+            else:
+                for i, belief in enumerate(self.beliefs):
+                    if new_belief >= belief:
+                        self.beliefs.insert(i, new_belief)
+                        break
+
+    def delete(self, formula):
         """
         Remove any belief with given formula (in case there are any dupplicates)
         """
-        # To do
-        return 1
+        for i, belief in enumerate(self.beliefs):
+            if belief.proposition == formula:
+                self.beliefs.pop(i)
 
     def contract(self, formula, order):
         """
@@ -63,5 +81,11 @@ class Belief:
     def __eq__(self, newBelief):
         return self.order == newBelief.order and self.formula == newBelief.formula
     
-    def __repr__(self):
+    def __ge__(self, newBelief):
+        return self.order >= newBelief.order
+
+    def __gt__(self,newBelief):
+        return self.order > newBelief.order
+    
+    def print(self):
         return f'Belief({self.formula}, order={self.order})'
