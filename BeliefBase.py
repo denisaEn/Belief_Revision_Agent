@@ -17,7 +17,7 @@ class BeliefBase:
     def __init__(self):
         # we can sort the belief set here
         self.beliefs = []
-        self.not_entailment = True
+        self.expanded = True
 
     def add(self, formula, order):
         """
@@ -57,12 +57,12 @@ class BeliefBase:
         _validate_order(order)
 
         _to_delete = []
-        self.not_entailment = True
+        self.exapanded = True
         for i, belief in enumerate(self.beliefs):
             if entailment(self.beliefs[0:i+1], prop_cnf) and order >= belief.order:
                 _to_delete.append(belief)
             elif entailment(self.beliefs[0:i+1], prop_cnf) and order < belief.order:
-                self.not_entailment = False
+                self.exapanded= False
 
         self.beliefs = [belief for belief in self.beliefs if belief not in _to_delete]
        
@@ -95,7 +95,7 @@ class BeliefBase:
             else:
                 self.contract(cnf, order)
 
-            if (self.not_entailment):
+            if (self.expanded):
                 self.expand(formula, order)
         else:
             Warning("Contradiction in proposition")

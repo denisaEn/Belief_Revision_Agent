@@ -59,11 +59,11 @@ class BeliefRevisionGUI:
         # Get the input formula and selected operation from th
         formula_str = self.formula_entry.get()
         operation = self.operation_var.get()
-        order = float(self.order.get())
 
         if formula_str == "" or self.order.get() == "":
             messagebox.showinfo("Warnig", "Formula and order cannot be empty!")
         else:
+            order = float(self.order.get())
             # Perform the appropriate belief revision operation
             if operation == "Revision":
             # Get the revision formula and revise the input formula 
