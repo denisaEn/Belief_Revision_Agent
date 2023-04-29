@@ -11,18 +11,19 @@ class BeliefRevisionGUI:
         # Initialize GUI window
         self.obj = BeliefBase() 
         self.window = tk.Tk()
+        self.window.geometry("500x300")
         self.window.title("Belief Revision GUI")
 
         # Create input box for propositional formula
         self.formula_label = tk.Label(self.window, text="Enter a propositional formula:")
         self.formula_label.pack()
-        self.formula_entry = tk.Entry(self.window, width=70)
+        self.formula_entry = tk.Entry(self.window, width=40)
         self.formula_entry.pack()
 
         # Create input box for order formula
         self.order = tk.Label(self.window, text="Enter the order:")
         self.order.pack()
-        self.order = tk.Entry(self.window, width=70)
+        self.order = tk.Entry(self.window, width=40)
         self.order.pack()
 
         # Create dropdown menu for operation selection
@@ -49,7 +50,7 @@ class BeliefRevisionGUI:
         # Create output box for revised formula
         self.output_label = tk.Label(self.window, text="Revised Formula:")
         self.output_label.pack()
-        self.output_text = tk.Label(self.window, height=7, width=70)
+        self.output_text = tk.Label(self.window, height=7, width=30, borderwidth=3, relief="sunken")
         self.output_text.pack()
         
         self.window.mainloop()
