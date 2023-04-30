@@ -28,7 +28,7 @@ class BeliefRevisionGUI:
         self.order = tk.Entry(self.window, width=20)
         self.order.pack()
 
-        buttonFrame = Frame(self.window)
+        buttonFrame = Frame(self.window, bg="#fce2ab", pady=15)
         buttonFrame.pack()
 
         # Create button to revise formula
@@ -49,7 +49,7 @@ class BeliefRevisionGUI:
         self.empty_button.grid(row=1, column=2)
 
         # Create textbox for belief base
-        self.output_label = tk.Label(self.window, text="Belief Base:", bg="#fce2ab")
+        self.output_label = tk.Label(self.window, text="Belief Base:", bg="#fce2ab", )
         self.output_label.pack()
         self.output_text = tk.Label(self.window, height=7, width=30, borderwidth=3, relief="sunken", bg="#f2bb70")
         self.output_text.pack()
@@ -62,7 +62,8 @@ class BeliefRevisionGUI:
             
              # Update the content of the belief base
             display_base(self, obj.beliefs)
-
+            self.formula_entry.delete(0, END)
+            self.order.delete(0, END)
 
     def contract_function(self, obj):
         formula_str, order = get_parameters(self)
@@ -97,7 +98,7 @@ def get_parameters(self):
     formula_str = self.formula_entry.get()
 
     if formula_str == "" or self.order.get() == "":
-        messagebox.showinfo("Warnig", "Formula and order cannot be empty!")
+        messagebox.showinfo("Warning", "Formula and order cannot be empty!")
         return "", 0
     else:
         order = float(self.order.get())

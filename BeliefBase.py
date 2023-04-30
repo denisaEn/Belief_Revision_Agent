@@ -57,12 +57,12 @@ class BeliefBase:
         _validate_order(order)
 
         _to_delete = []
-        self.exapanded = True
+        self.expanded = True
         for i, belief in enumerate(self.beliefs):
             if entailment(self.beliefs[0:i+1], prop_cnf) and order >= belief.order:
                 _to_delete.append(belief)
             elif entailment(self.beliefs[0:i+1], prop_cnf) and order < belief.order:
-                self.exapanded= False
+                self.expanded= False
 
         self.beliefs = [belief for belief in self.beliefs if belief not in _to_delete]
        
