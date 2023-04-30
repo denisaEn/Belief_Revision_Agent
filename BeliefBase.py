@@ -1,5 +1,6 @@
 
 import re
+from tkinter import messagebox
 from sympy.logic.boolalg import to_cnf
 from entailment import *
 
@@ -15,14 +16,15 @@ def _validate_order(order):
 
 class BeliefBase:
     def __init__(self):
-        # we can sort the belief set here
         self.beliefs = []
         self.expanded = True
     
-    def parsing_bicond(self, belief):
-        """ Formats biconditionality to match requirements for sympy logic to_cnf """
-        bicond_patt = "<>"
-        belief = re.sub(bicond_patt, '>>', belief)
+    def process_bicond(self, belief):
+        """
+        Transform the biiconditional formula into two implication formulas
+        """
+        bincond_symbol = "<>"
+        belief = re.sub(bincond_symbol, '>>', belief)
         belief = re.sub(r"[()]", "", belief)
         return_belief = '('+belief+')&('+belief[-1]+'>>'+belief[0]+')'
         
@@ -32,15 +34,19 @@ class BeliefBase:
         """
         Add a belief to the base (sorted by order) without checking the validity.
         """
+        # Check if the formula is a biconditional
         if "<>" in formula:
-            formula = self.parsing_bicond(formula)
-        formula = to_cnf(formula)
-        #Remove dupplicates
-        self.delete(formula)
+            formula = self.process_bicond(formula)
+
+        # Convert the formula into a conjunctive natural form
+        formula_cnf = to_cnf(formula)
+
+        # Remove dupplicates
+        self.delete(formula_cnf)
 
         if order > 0:
-            new_belief = Belief(formula, order)
-            # add at the end if there is no belief in the list or the order is maximum
+            new_belief = Belief(formula_cnf, order)
+            # Add at the end if there is no belief in the list or the order is maximum
             if len(self.beliefs) == 0 or self.beliefs[-1] >= new_belief:
                 self.beliefs.append(new_belief)
             else:
@@ -63,8 +69,11 @@ class BeliefBase:
         """
         Remove the belief from the Base
         """
-        prop_cnf = to_cnf(formula)
+        # Check if the order is within range
         _validate_order(order)
+
+        # Convert the formula into a conjunctive natural form
+        formula_cnf = to_cnf(formula)
 
         to_delete = []
         new_beliefs = []
@@ -73,10 +82,10 @@ class BeliefBase:
         for i, belief in enumerate(self.beliefs):
             new_beliefs.append(belief)
             
-            if entailment(new_beliefs, prop_cnf) and order >= belief.order:
+            if check_entailment(new_beliefs, formula_cnf) and order >= belief.order:
                 to_delete.append(belief)
                 new_beliefs.pop(len(new_beliefs) -1)
-            elif entailment(new_beliefs, prop_cnf) and order < belief.order:
+            elif check_entailment(new_beliefs, formula_cnf) and order < belief.order:
                 self.expanded = False
 
         self.beliefs = [belief for belief in self.beliefs if belief not in to_delete]
@@ -85,10 +94,12 @@ class BeliefBase:
         """
         Add the belief to the Base by expanding it
         """
-         # Check if the order is within range
+        # Check if the order is within range
         _validate_order(order)
+
+        # Check if the formula is a biconditional
         if "<>" in formula:
-            formula = self.parsing_bicond(formula)
+            formula = self.process_bicond(formula)
         self.add(formula, order)
     
     def revise(self, formula, order):
@@ -96,26 +107,31 @@ class BeliefBase:
         The belief is added and other things are removed,
         so that the resulting new belief set is consistent
         """
+        # Check if the order is within range
         _validate_order(order)
+
+        # Check if the formula is a biconditional
         if "<>" in formula:
-            formula = self.parsing_bicond(formula)
-        cnf = to_cnf(formula)
+            formula = self.process_bicond(formula)
+        
+        # Convert the formula into a conjunctive natural form
+        formula_cnf = to_cnf(formula)
 
         # Check for contradiction in proposition
-        if not entailment([], ~cnf):
-            # this is a tautology
-            if entailment([], cnf):
+        if not check_entailment([], ~formula_cnf):
+            # Update the order if the formula is a tautology
+            if check_entailment([], formula_cnf):
                 order = 1
-            elif not entailment(self.beliefs, cnf):
-                negated_cnf = to_cnf(f'~({cnf})')
+            elif not check_entailment(self.beliefs, formula_cnf):
+                negated_cnf = to_cnf(f'~({formula_cnf})')
                 self.contract(negated_cnf, order)
             else:
-                self.contract(cnf, order)
+                self.contract(formula_cnf, order)
 
             if (self.expanded):
                 self.expand(formula, order)
         else:
-            Warning("Contradiction in proposition")
+            messagebox.showinfo("Warning", "Contradiction in proposition!")
 
     def clear(self):
         """
