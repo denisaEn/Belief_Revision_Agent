@@ -17,6 +17,7 @@ class BeliefBase:
     def __init__(self):
         # we can sort the belief set here
         self.beliefs = []
+        self.expanded = True
 
     def add(self, formula, order):
         """
@@ -56,17 +57,15 @@ class BeliefBase:
         _validate_order(order)
 
         _to_delete = []
-        #clauses_pre = self.get_clauses()
+        self.exapanded = True
         for i, belief in enumerate(self.beliefs):
-            if entailment(self.beliefs[0:i+1], prop_cnf) and order > belief.order:
+            if entailment(self.beliefs[0:i+1], prop_cnf) and order >= belief.order:
                 _to_delete.append(belief)
+            elif entailment(self.beliefs[0:i+1], prop_cnf) and order < belief.order:
+                self.exapanded= False
 
         self.beliefs = [belief for belief in self.beliefs if belief not in _to_delete]
-        #clauses = self.get_clauses()
-        #if not clauses.issubset(clauses_pre):
-            # Contracted set B' is a subset of B (Success)
-         #   raise Exception('An error arise in contraction and Belief base changed')
-
+       
     def expand(self, formula, order):
         """
         Add the belief to the Base by expanding it
@@ -83,10 +82,29 @@ class BeliefBase:
         _validate_order(order)
 
         cnf = to_cnf(formula)
-        negated_cnf = to_cnf(f'~({cnf})')
-        self.contract(negated_cnf, order)
-        self.expand(formula, order)
-    
+
+        # Check for contradiction in proposition
+        if not entailment([], ~cnf):
+            # this is a tautology
+            if entailment([], cnf):
+                order = 1
+            elif not entailment(self.beliefs, cnf):
+                print(" in else")
+                negated_cnf = to_cnf(f'~({cnf})')
+                self.contract(negated_cnf, order)
+            else:
+                self.contract(cnf, order)
+
+            if (self.expanded):
+                self.expand(formula, order)
+        else:
+            Warning("Contradiction in proposition")
+    def clear(self):
+        """
+        Empty the Belief base
+        """
+        self.beliefs.clear()
+
     # TO DO - other methods here such as:
     # clear (empty the belief set), 
     # len(return the length of the belief set),
