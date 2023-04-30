@@ -32,26 +32,26 @@ class BeliefRevisionGUI:
         buttonFrame.pack()
 
         # Create button to revise formula
-        self.revise_button = tk.Button(buttonFrame, text="Revise", command = lambda obj=self.obj: self.revise_function(obj), bg="#cbedee")
+        self.revise_button = tk.Button(buttonFrame, text="Revise", command = lambda obj=self.obj: self.revise_function(obj), bg="#d6b181")
         self.revise_button.grid(row=0, column=1)
         self.revise_button.grid_rowconfigure(0, weight=1)
 
         # Create button to contract formula
-        self.contract_button = tk.Button(buttonFrame, text="Contract", command = lambda obj=self.obj: self.contract_function(obj), bg="#cbedee")
+        self.contract_button = tk.Button(buttonFrame, text="Contract", command = lambda obj=self.obj: self.contract_function(obj), bg="#d6b181")
         self.contract_button.grid(row=0, column=2)
 
         # Create button to expand formula
-        self.expand_button = tk.Button(buttonFrame, text="Expand", command = lambda obj=self.obj: self.expand_function(obj), bg="#cbedee")
+        self.expand_button = tk.Button(buttonFrame, text="Expand", command = lambda obj=self.obj: self.expand_function(obj), bg="#d6b181")
         self.expand_button.grid(row=0, column=3)
 
         # Create button to delete the belief base
-        self.empty_button = tk.Button(buttonFrame, text="Empty", command = lambda obj=self.obj: self.empty_function(obj), bg="#cbedee")
+        self.empty_button = tk.Button(buttonFrame, text="Empty", command = lambda obj=self.obj: self.empty_function(obj), bg="#d6b181")
         self.empty_button.grid(row=1, column=2)
 
         # Create textbox for belief base
         self.output_label = tk.Label(self.window, text="Belief Base:", bg="#fce2ab", )
         self.output_label.pack()
-        self.output_text = tk.Label(self.window, height=7, width=30, borderwidth=3, relief="sunken", bg="#f2bb70")
+        self.output_text = tk.Label(self.window, height=7, width=50, borderwidth=3, relief="sunken", bg="#f2bb70", wraplength= 300)
         self.output_text.pack()
         
         self.window.mainloop()
