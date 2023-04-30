@@ -70,6 +70,8 @@ class BeliefRevisionGUI:
         if formula_str != "":
             order = float(self.order.get())
             # Perform the belief contraction operation
+            if "<>" in formula_str:
+                formula_str = obj.parsing_bicond(formula_str)
             obj.contract(formula_str, order)
             
             # Update the content of the belief base       
@@ -108,8 +110,6 @@ def display_base(self, beliefs):
     belief_base_content = ""
     for belief in beliefs:
         belief_base_content = belief_base_content + " (" + str(belief.formula) + ", " + str(belief.order) +")"
-        print (belief.formula)
-        print(belief.order)
     self.output_text["text"] = belief_base_content
 
 

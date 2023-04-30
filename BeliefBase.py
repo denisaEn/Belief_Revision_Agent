@@ -1,5 +1,5 @@
 
-
+import re
 from sympy.logic.boolalg import to_cnf
 from entailment import *
 
@@ -18,11 +18,22 @@ class BeliefBase:
         # we can sort the belief set here
         self.beliefs = []
         self.expanded = True
+    
+    def parsing_bicond(self, belief):
+        """ Formats biconditionality to match requirements for sympy logic to_cnf """
+        bicond_patt = "<>"
+        belief = re.sub(bicond_patt, '>>', belief)
+        belief = re.sub(r"[()]", "", belief)
+        return_belief = '('+belief+')&('+belief[-1]+'>>'+belief[0]+')'
+        
+        return return_belief
 
     def add(self, formula, order):
         """
         Add a belief to the base (sorted by order) without checking the validity.
         """
+        if "<>" in formula:
+            formula = self.parsing_bicond(formula)
         formula = to_cnf(formula)
         #Remove dupplicates
         self.delete(formula)
@@ -52,25 +63,23 @@ class BeliefBase:
         """
         Remove the belief from the Base
         """
-         # Set of maximal subset of KB that not imply other
         prop_cnf = to_cnf(formula)
         _validate_order(order)
 
-        _to_delete = []
+        to_delete = []
         new_beliefs = []
 
         self.expanded = True
         for i, belief in enumerate(self.beliefs):
             new_beliefs.append(belief)
-            entails = entailment(new_beliefs, formula)
-            print("Entails ", entails)
+            
             if entailment(new_beliefs, prop_cnf) and order >= belief.order:
-                _to_delete.append(belief)
+                to_delete.append(belief)
                 new_beliefs.pop(len(new_beliefs) -1)
             elif entailment(new_beliefs, prop_cnf) and order < belief.order:
                 self.expanded = False
 
-        self.beliefs = [belief for belief in self.beliefs if belief not in _to_delete]
+        self.beliefs = [belief for belief in self.beliefs if belief not in to_delete]
        
     def expand(self, formula, order):
         """
@@ -78,6 +87,8 @@ class BeliefBase:
         """
          # Check if the order is within range
         _validate_order(order)
+        if "<>" in formula:
+            formula = self.parsing_bicond(formula)
         self.add(formula, order)
     
     def revise(self, formula, order):
@@ -86,7 +97,8 @@ class BeliefBase:
         so that the resulting new belief set is consistent
         """
         _validate_order(order)
-
+        if "<>" in formula:
+            formula = self.parsing_bicond(formula)
         cnf = to_cnf(formula)
 
         # Check for contradiction in proposition
@@ -95,7 +107,6 @@ class BeliefBase:
             if entailment([], cnf):
                 order = 1
             elif not entailment(self.beliefs, cnf):
-                print(" in else")
                 negated_cnf = to_cnf(f'~({cnf})')
                 self.contract(negated_cnf, order)
             else:
@@ -105,17 +116,13 @@ class BeliefBase:
                 self.expand(formula, order)
         else:
             Warning("Contradiction in proposition")
+
     def clear(self):
         """
         Empty the Belief base
         """
         self.beliefs.clear()
-
-    # TO DO - other methods here such as:
-    # clear (empty the belief set), 
-    # len(return the length of the belief set),
-    # getitem(return the belief on a certain index)
-    # repr (print method for the Belief base)
+  
 
 class Belief:
     def __init__(self, formula, order=None):
@@ -130,6 +137,3 @@ class Belief:
 
     def __gt__(self,newBelief):
         return self.order > newBelief.order
-    
-    def print(self):
-        return f'Belief({self.formula}, order={self.order})'
